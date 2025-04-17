@@ -7,6 +7,7 @@ use tempfile::NamedTempFile;
 fn main() {
     // Embed the ONNX bytes
     let onnx_bytes = embed_onnx!("1.20.0");
+    // let messed_up_bytes = b"\0\0\x06\0\0\0\x17\0\0\0X\x0b\0\0\x85\0\x91\0\0";
 
     // Create a named temporary file
     let mut temp_file = NamedTempFile::new().unwrap();
@@ -19,5 +20,6 @@ fn main() {
 
     // Initialize ORT from the temporary file path
     let environment: EnvironmentBuilder = ort::init_from(path.to_str().unwrap());
-    environment.commit().unwrap();
+    // let another_env = environment.clone();
+    let _outcome = environment.commit().unwrap();
 }
