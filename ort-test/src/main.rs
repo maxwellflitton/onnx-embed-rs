@@ -12,14 +12,18 @@ fn main() {
     // Create a named temporary file
     let mut temp_file = NamedTempFile::new().unwrap();
 
+    println!("writing ONNX to file");
     // Write the ONNX bytes into the file
     temp_file.write_all(onnx_bytes).unwrap();
+    println!("written ONNX to file");
 
     // Persist the file to get a stable path (on some platforms)
     let path: PathBuf = temp_file.path().to_path_buf();
 
     // Initialize ORT from the temporary file path
+    println!("constructing ML environment");
     let environment: EnvironmentBuilder = ort::init_from(path.to_str().unwrap());
-    // let another_env = environment.clone();
+    println!("environment constructed");
     let _outcome = environment.commit().unwrap();
+    println!("environment committed");
 }
