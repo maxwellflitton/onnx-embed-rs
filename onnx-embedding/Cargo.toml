@@ -1,0 +1,20 @@
+[package]
+name = "onnx-embedding"
+version = "0.1.0"
+edition = "2021"
+description = "Downloads and extracts the libonnxruntime to a byte string"
+license = "MIT"
+
+[dependencies]
+quote = "1.0.40"
+syn = { version = "2.0.100", features = ["full"] }
+reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }
+flate2 = "1"
+tar = "0.4"
+zip = "2.6.1"
+proc-macro2 = { version = "1.0.94", features = ["span-locations"] }
+pathdiff = "0.2"
+tempfile = "3.19.1"
+
+[lib]
+proc-macro = true
