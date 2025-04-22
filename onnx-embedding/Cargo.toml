@@ -1,6 +1,6 @@
 [package]
 name = "onnx-embedding"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Downloads and extracts the libonnxruntime to a byte string"
 license = "MIT"
