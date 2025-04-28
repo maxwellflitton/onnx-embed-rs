@@ -1,7 +1,8 @@
 
 [workspace]
 resolver = "2"
-members = [ "depth-test/depth",
+members = [ 
+    "depth-test/depth",
     "onnx-embedding", 
     "ort-test",
 ]

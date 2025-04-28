@@ -1,9 +1,10 @@
 [package]
 name = "depth"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 onnx-embedding = { path = "../../onnx-embedding" }
 ort = { version = "2.0.0-rc.9", features = [ "cuda", "ndarray", "load-dynamic" ]}
 tempfile = "3.19.1"
+zip = "2.6.1"
