@@ -10,6 +10,12 @@ use std::io::{Write, Read};
 use zip::{write::FileOptions, ZipWriter};
 
 
+/// Defines the types of dynamic lib files that are supported
+/// 
+/// # Fields
+/// - So: for Linux
+/// - Dylib: for Mac
+/// - Dll: for Windows
 #[derive(Clone)]
 pub enum DylibName {
     So,
@@ -17,6 +23,7 @@ pub enum DylibName {
     Dll
 }
 
+// converts to u8 so file type can be denoted in raw bytes array
 impl From<DylibName> for u8 {
 
     fn from(value: DylibName) -> Self {
@@ -29,6 +36,7 @@ impl From<DylibName> for u8 {
 
 }
 
+// converts from u8 fo file type can be denoted in raw bytes array
 impl TryFrom<u8> for DylibName {
 
     type Error = String;
@@ -44,6 +52,7 @@ impl TryFrom<u8> for DylibName {
 
 }
 
+// for reading files
 impl From<DylibName> for &str {
 
     fn from(value: DylibName) -> Self {
@@ -111,6 +120,11 @@ pub fn extract_zip<P: AsRef<Path>>(zip_path: P, extract_to: P) -> io::Result<()>
 }
 
 
+/// Zips a directory to a .zip file.
+/// 
+/// # Arguments
+/// - src_dir: the directory that is going to be zipped
+/// - writer: the writer performing the zipping
 pub fn zip_dir<T: Write + std::io::Seek>(src_dir: &Path, writer: T) -> zip::result::ZipResult<()> {
     let mut zip = ZipWriter::new(writer);
 

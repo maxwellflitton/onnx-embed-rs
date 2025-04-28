@@ -9,7 +9,7 @@ use std::{
     env,
     env::consts,
     fs::{self, File},
-    io::{Write, Seek, Cursor},
+    io::{Write, Cursor},
     path::{Path, PathBuf},
 };
 mod file_extraction;
@@ -154,18 +154,11 @@ pub fn embed_onnx(attr: TokenStream) -> TokenStream {
 
     // attach a flag onto the start of the bytes to denote the name of the dylib
     let raw_bytes = buffer.into_inner();
-    let file_flag: [u8; 1] = [dylib_name.into()];
-    // let mut new_buffer = Vec::with_capacity(1 + raw_bytes.len());
-    // new_buffer.push(file_flag);
-    // new_buffer.extend_from_slice(&raw_bytes);
-
-    let bytes: Vec<u8> = fs::read(&dylib_path).expect("Failed to read extracted library");
 
     // release the lock for other processes
     lock.unlock().expect("Failed to release download lock");
 
     let byte_string = Literal::byte_string(&raw_bytes);
-    let byte_flag = Literal::byte_string(&file_flag);
 
     let tokens = quote! {
         #byte_string
