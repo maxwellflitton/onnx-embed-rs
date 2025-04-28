@@ -9,14 +9,16 @@ use std::{
     env,
     env::consts,
     fs::{self, File},
-    io::Write,
+    io::{Write, Seek, Cursor},
     path::{Path, PathBuf},
 };
 mod file_extraction;
 use file_extraction::{
     FileType,
     extract_tgz,
-    extract_zip
+    extract_zip,
+    zip_dir,
+    DylibName
 };
 
 
@@ -27,7 +29,7 @@ use file_extraction::{
 /// 
 /// # Returns
 /// (url, package_name, ext, dylib_name)
-fn get_onnxruntime_url(onnx_version: &str) -> (String, String, String, String, FileType) {
+fn get_onnxruntime_url(onnx_version: &str) -> (String, String, String, DylibName, FileType) {
     let base_url = format!(
         "https://github.com/microsoft/onnxruntime/releases/download/v{}/",
         onnx_version
@@ -38,42 +40,42 @@ fn get_onnxruntime_url(onnx_version: &str) -> (String, String, String, String, F
             format!("{}onnxruntime-linux-x64-{}.tgz", base_url, onnx_version),
             format!("onnxruntime-linux-x64-{}", onnx_version),
             "tgz".to_string(),
-            "libonnxruntime.so".to_string(),
+            DylibName::So,
             FileType::Tgz
         ),
         ("linux", "aarch64") => (
             format!("{}onnxruntime-linux-aarch64-{}.tgz", base_url, onnx_version),
             format!("onnxruntime-linux-aarch64-{}", onnx_version),
             "tgz".to_string(),
-            "libonnxruntime.so".to_string(),
+            DylibName::So,
             FileType::Tgz
         ),
         ("macos", "x86_64") => (
             format!("{}onnxruntime-osx-x86_64-{}.tgz", base_url, onnx_version),
             format!("onnxruntime-osx-x86_64-{}", onnx_version),
             "tgz".to_string(),
-            "libonnxruntime.dylib".to_string(),
+            DylibName::Dylib,
             FileType::Tgz
         ),
         ("macos", "aarch64") => (
             format!("{}onnxruntime-osx-arm64-{}.tgz", base_url, onnx_version),
             format!("onnxruntime-osx-arm64-{}", onnx_version),
             "tgz".to_string(),
-            "libonnxruntime.dylib".to_string(),
+            DylibName::Dylib,
             FileType::Tgz
         ),
         ("windows", "x86_64") => (
             format!("{}onnxruntime-win-x64-{}.zip", base_url, onnx_version),
             format!("onnxruntime-win-x64-{}", onnx_version),
             "zip".to_string(),
-            "onnxruntime.dll".to_string(),
+            DylibName::Dll,
             FileType::Zip
         ),
         ("windows", "aarch64") => (
             format!("{}onnxruntime-win-arm64-{}.zip", base_url, onnx_version),
             format!("onnxruntime-win-arm64-{}", onnx_version),
             "zip".to_string(),
-            "onnxruntime.dll".to_string(),
+            DylibName::Dll,
             FileType::Zip
         ),
         _ => panic!(
@@ -118,8 +120,11 @@ pub fn embed_onnx(attr: TokenStream) -> TokenStream {
     let filename = format!("{}.{}", package_name, ext);
     let download_path = cache.join(&filename);
     let extract_target = cache.join(&package_name);
-    let dylib_path = extract_target.join("lib").join(&dylib_name);
+    let lib_path = extract_target.join("lib");
+    let dylib_name_str: &str = dylib_name.clone().into();
+    let dylib_path = lib_path.join(dylib_name_str);
 
+    // obtain the lock for multiple downloads at the same time
     let lock_path = cache.join("onnx_download.lock");
     let mut lock = fslock::LockFile::open(&lock_path).expect("Failed to open lock file");
     lock.lock().expect("Failed to acquire download lock");
@@ -143,11 +148,24 @@ pub fn embed_onnx(attr: TokenStream) -> TokenStream {
         };
     }
 
+    // zip the contents of the lib dir into bytes
+    let mut buffer = Cursor::new(Vec::new());
+    zip_dir(&lib_path, &mut buffer).expect("Failed to zip directory");
+
+    // attach a flag onto the start of the bytes to denote the name of the dylib
+    let raw_bytes = buffer.into_inner();
+    let file_flag: [u8; 1] = [dylib_name.into()];
+    // let mut new_buffer = Vec::with_capacity(1 + raw_bytes.len());
+    // new_buffer.push(file_flag);
+    // new_buffer.extend_from_slice(&raw_bytes);
+
     let bytes: Vec<u8> = fs::read(&dylib_path).expect("Failed to read extracted library");
 
+    // release the lock for other processes
     lock.unlock().expect("Failed to release download lock");
 
-    let byte_string = Literal::byte_string(&bytes);
+    let byte_string = Literal::byte_string(&raw_bytes);
+    let byte_flag = Literal::byte_string(&file_flag);
 
     let tokens = quote! {
         #byte_string

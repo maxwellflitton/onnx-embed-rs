@@ -16,6 +16,7 @@ proc-macro2 = { version = "1.0.94", features = ["span-locations"] }
 pathdiff = "0.2"
 tempfile = "3.19.1"
 fslock = "0.2.1"
+walkdir = "2.5.0"
 
 [lib]
 proc-macro = true
