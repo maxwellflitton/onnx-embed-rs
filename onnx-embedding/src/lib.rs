@@ -120,6 +120,10 @@ pub fn embed_onnx(attr: TokenStream) -> TokenStream {
     let extract_target = cache.join(&package_name);
     let dylib_path = extract_target.join("lib").join(&dylib_name);
 
+    let lock_path = cache.join("onnx_download.lock");
+    let mut lock = fslock::LockFile::open(&lock_path).expect("Failed to open lock file");
+    lock.lock().expect("Failed to acquire download lock");
+
     if !download_path.exists() {
         println!("Downloading ONNX Runtime from {}", url);
         let response = reqwest::blocking::get(&url)
@@ -140,6 +144,8 @@ pub fn embed_onnx(attr: TokenStream) -> TokenStream {
     }
 
     let bytes: Vec<u8> = fs::read(&dylib_path).expect("Failed to read extracted library");
+
+    lock.unlock().expect("Failed to release download lock");
 
     let byte_string = Literal::byte_string(&bytes);
 
