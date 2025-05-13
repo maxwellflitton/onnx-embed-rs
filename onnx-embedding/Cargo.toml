@@ -1,6 +1,6 @@
 [package]
 name = "onnx-embedding"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "Downloads and extracts the libonnxruntime to a byte string"
 license = "MIT"
@@ -8,7 +8,7 @@ license = "MIT"
 [dependencies]
 quote = "1.0.40"
 syn = { version = "2.0.100", features = ["full"] }
-reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }
+reqwest = { version = "0.12", features = ["blocking", "rustls-tls"], default-features = false }
 flate2 = "1"
 tar = "0.4"
 zip = "2.6.1"
