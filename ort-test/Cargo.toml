@@ -1,10 +1,10 @@
 [package]
 name = "ort-test"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
 onnx-embedding = { path = "../onnx-embedding" }
 ort = { version = "2.0.0-rc.9", features = [ "cuda", "ndarray", "load-dynamic" ]}
 tempfile = "3.19.1"
-zip = "2.6.1"
+zip = "3.0.0"
