@@ -44,7 +44,7 @@ fn unzip_to_temp_dir(zip_bytes: &[u8]) -> std::io::Result<(PathBuf, TempDir)> {
 fn main() {
     // Embed the ONNX bytes
     // let onnx_bytes = embed_onnx!("1.20.0");
-    let onnx_bytes = embed_onnx!("1.20.0");
+    let onnx_bytes = embed_onnx!("1.22.0");
     // let messed_up_bytes = b"\0\0\x06\0\0\0\x17\0\0\0X\x0b\0\0\x85\0\x91\0\0";
 
     println!("writing ONNX to file");
