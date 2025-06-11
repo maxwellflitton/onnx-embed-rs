@@ -91,9 +91,10 @@ pub fn embed_onnx(attr: TokenStream) -> TokenStream {
 
     // get the onnx version
     let input = parse_macro_input!(attr as LitStr);
-    let supported_versions = ["1.20.0"];
+    let supported_versions = ["1.20.0", "1.22.0"];
     let onnx_version = match input.value().as_str() {
         "1.20.0" => "1.20.0",
+        "1.22.0" => "1.22.0",
         _ => panic!(
             "{} passed in as version, only the following versions are supported: {:?}", 
             input.value(), supported_versions
